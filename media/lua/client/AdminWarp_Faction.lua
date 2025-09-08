@@ -1,6 +1,32 @@
-
+----------------------------------------------------------------
+-----  ▄▄▄   ▄    ▄   ▄  ▄▄▄▄▄   ▄▄▄   ▄   ▄   ▄▄▄    ▄▄▄  -----
+----- █   ▀  █    █▄▄▄█    █    █   ▀  █▄▄▄█  ▀  ▄█  █ ▄▄▀ -----
+----- █  ▀█  █      █      █    █   ▄  █   █  ▄   █  █   █ -----
+-----  ▀▀▀▀  ▀▀▀▀   ▀      ▀     ▀▀▀   ▀   ▀   ▀▀▀   ▀   ▀ -----
+----------------------------------------------------------------
+--                                                            --
+--   Project Zomboid Modding Commissions                      --
+--   https://steamcommunity.com/id/glytch3r/myworkshopfiles   --
+--                                                            --
+--   ▫ Discord  ꞉   glytch3r                                  --
+--   ▫ Support  ꞉   https://ko-fi.com/glytch3r                --
+--   ▫ Youtube  ꞉   https://www.youtube.com/@glytch3r         --
+--   ▫ Github   ꞉   https://github.com/Glytch3r               --
+--                                                            --
+----------------------------------------------------------------
+----- ▄   ▄   ▄▄▄   ▄   ▄   ▄▄▄     ▄      ▄   ▄▄▄▄  ▄▄▄▄  -----
+----- █   █  █   ▀  █   █  ▀   █    █      █      █  █▄  █ -----
+----- ▄▀▀ █  █▀  ▄  █▀▀▀█  ▄   █    █    █▀▀▀█    █  ▄   █ -----
+-----  ▀▀▀    ▀▀▀   ▀   ▀   ▀▀▀   ▀▀▀▀▀  ▀   ▀    ▀   ▀▀▀  -----
+----------------------------------------------------------------
 --client/AdminWarp_Faction.lua
 AdminWarp = AdminWarp or {}
+
+function AdminWarp.getPlayerFaction(targ)
+    targ = targ or getPlayer() 
+    local fact = Faction.getPlayerFaction(targ) 
+    return fact or nil
+end
 
 function AdminWarp.isPlayerInFaction(user, name)
     local fact = AdminWarp.getFactionFromName(name)
@@ -11,24 +37,21 @@ end
 function AdminWarp.isOwner(pl, portal)
     if not pl or not portal then return false end
     if not portal.faction then return false end
+    local fact = AdminWarp.getPlayerFaction(pl)
+    if not fact then return false end
+    return fact and fact:isOwner(pl:getUsername())
+end
 
-    local playerFaction = AdminWarp.getPlayerFaction(pl)
-    if not playerFaction then return false end
-
-    return playerFaction:isOwner(pl:getUsername())
+function AdminWarp.isFactionOwner(pl, faction)
+    if not pl or not faction then return false end
+    local fact = AdminWarp.getPlayerFaction(pl)
+    return fact and fact:isOwner(pl:getUsername())
 end
 
 
-
-function AdminWarp.getPlayerFaction(targ)
-    targ = targ or getPlayer() 
-    local fact = Faction.getPlayerFaction(targ) 
-    return fact or nil
-end
 
 function AdminWarp.isMember(targ, name)
     targ = targ or getPlayer() 
-
     local fact =  AdminWarp.getPlayerFaction(targ)
     local factName
     if fact then
@@ -39,7 +62,6 @@ function AdminWarp.isMember(targ, name)
     end
     return false
 end
-
 
 function AdminWarp.getFactionFromTag(tag)
     if not tag then return nil end

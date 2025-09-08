@@ -1,35 +1,72 @@
+----------------------------------------------------------------
+-----  ▄▄▄   ▄    ▄   ▄  ▄▄▄▄▄   ▄▄▄   ▄   ▄   ▄▄▄    ▄▄▄  -----
+----- █   ▀  █    █▄▄▄█    █    █   ▀  █▄▄▄█  ▀  ▄█  █ ▄▄▀ -----
+----- █  ▀█  █      █      █    █   ▄  █   █  ▄   █  █   █ -----
+-----  ▀▀▀▀  ▀▀▀▀   ▀      ▀     ▀▀▀   ▀   ▀   ▀▀▀   ▀   ▀ -----
+----------------------------------------------------------------
+--                                                            --
+--   Project Zomboid Modding Commissions                      --
+--   https://steamcommunity.com/id/glytch3r/myworkshopfiles   --
+--                                                            --
+--   ▫ Discord  ꞉   glytch3r                                  --
+--   ▫ Support  ꞉   https://ko-fi.com/glytch3r                --
+--   ▫ Youtube  ꞉   https://www.youtube.com/@glytch3r         --
+--   ▫ Github   ꞉   https://github.com/Glytch3r               --
+--                                                            --
+----------------------------------------------------------------
+----- ▄   ▄   ▄▄▄   ▄   ▄   ▄▄▄     ▄      ▄   ▄▄▄▄  ▄▄▄▄  -----
+----- █   █  █   ▀  █   █  ▀   █    █      █      █  █▄  █ -----
+----- ▄▀▀ █  █▀  ▄  █▀▀▀█  ▄   █    █    █▀▀▀█    █  ▄   █ -----
+-----  ▀▀▀    ▀▀▀   ▀   ▀   ▀▀▀   ▀▀▀▀▀  ▀   ▀    ▀   ▀▀▀  -----
+----------------------------------------------------------------
 UserWarp = UserWarp or {}
+AdminWarp = AdminWarp or {}
 UserWarp.teleportCountdowns = {}
 UserWarp.tickHandlerAdded = false
 
-function UserWarp:sendBeacon(portal)
-    if not portal then return end
-    local portalData = {
-        x = portal.x,
-        y = portal.y,
-        z = portal.z,
-        title = portal.title,
-        faction = portal.faction,
-        seconds = SandboxVars.AdminWarp.TPdelay or 10
-    }
-    sendServerCommand("AdminWarp", "Beacon", {portal = portalData})
+function AdminWarp.getPortalCoordsFromName(name)
+    if not name or not AdminWarpData then return nil end
+    for i = 1, #AdminWarpData do
+        local portal = AdminWarpData[i]
+        if portal and portal.title == name then
+            return portal
+        end
+    end
+    return nil
 end
 
-function UserWarp:startTeleportCountdown(player, portalData, seconds, isBeacon)
-    if not portalData or not player or not portalData.active then return end
 
-    self.teleportCountdowns[player:getUsername()] = {
+function AdminWarp.getPortalFromName(name)
+    if not name or not AdminWarpData then return nil end
+    for i = 1, #AdminWarpData do
+        local portal = AdminWarpData[i]
+        if portal and portal.faction == name then
+            return AdminWarpData[i]
+        end
+    end
+    return nil
+end
+
+
+function UserWarp.startTeleportCountdown(player, portalData, seconds, isBeacon)
+    player = player or getPlayer() 
+    if not portalData or not player then return end
+    if not isBeacon and not portalData.active then return end
+    local  isForAll = false
+     if portalData.faction == nil then isForAll = true end
+    UserWarp.teleportCountdowns[player:getUsername()] = {
         player = player,
         portal = portalData,
         secondsLeft = seconds,
         tickCounter = 0,
         marker = nil,
-        isBeacon = isBeacon
+        isBeacon = isBeacon,
+        isForAll = isForAll
     }
 
-    if not self.tickHandlerAdded then
-        Events.OnTick.Add(self.teleportTickHandler)
-        self.tickHandlerAdded = true
+    if not UserWarp.tickHandlerAdded then
+        Events.OnTick.Add(UserWarp.teleportTickHandler)
+        UserWarp.tickHandlerAdded = true
     end
 end
 
@@ -46,9 +83,14 @@ function UserWarp.teleportTick(cd)
     cd.tickCounter = cd.tickCounter + 1
 
     if cd.tickCounter % 20 == 0 then
+
         if cd.marker then cd.marker:remove() end
         local r, g, b = 1, 1, 1
-        if cd.isBeacon then
+
+        if cd.isForAll then
+            r, g, b = 1, 0, 0
+
+        elseif cd.isBeacon then
             r, g, b = 0.6, 1, 0.2 
         end
         cd.marker = getWorldMarkers():addGridSquareMarker("warp", "warp", pl:getCurrentSquare(), r, g, b, true, ZombRand(1,10)/10)

@@ -1,3 +1,24 @@
+----------------------------------------------------------------
+-----  ▄▄▄   ▄    ▄   ▄  ▄▄▄▄▄   ▄▄▄   ▄   ▄   ▄▄▄    ▄▄▄  -----
+----- █   ▀  █    █▄▄▄█    █    █   ▀  █▄▄▄█  ▀  ▄█  █ ▄▄▀ -----
+----- █  ▀█  █      █      █    █   ▄  █   █  ▄   █  █   █ -----
+-----  ▀▀▀▀  ▀▀▀▀   ▀      ▀     ▀▀▀   ▀   ▀   ▀▀▀   ▀   ▀ -----
+----------------------------------------------------------------
+--                                                            --
+--   Project Zomboid Modding Commissions                      --
+--   https://steamcommunity.com/id/glytch3r/myworkshopfiles   --
+--                                                            --
+--   ▫ Discord  ꞉   glytch3r                                  --
+--   ▫ Support  ꞉   https://ko-fi.com/glytch3r                --
+--   ▫ Youtube  ꞉   https://www.youtube.com/@glytch3r         --
+--   ▫ Github   ꞉   https://github.com/Glytch3r               --
+--                                                            --
+----------------------------------------------------------------
+----- ▄   ▄   ▄▄▄   ▄   ▄   ▄▄▄     ▄      ▄   ▄▄▄▄  ▄▄▄▄  -----
+----- █   █  █   ▀  █   █  ▀   █    █      █      █  █▄  █ -----
+----- ▄▀▀ █  █▀  ▄  █▀▀▀█  ▄   █    █    █▀▀▀█    █  ▄   █ -----
+-----  ▀▀▀    ▀▀▀   ▀   ▀   ▀▀▀   ▀▀▀▀▀  ▀   ▀    ▀   ▀▀▀  -----
+----------------------------------------------------------------
 require "ISUI/ISPanel"
 require "ISUI/ISButton"
 require "ISUI/ISScrollingListBox"
@@ -73,9 +94,9 @@ function UserWarpPanel:initialise()
     self.teleportBtn = ISButton:new(margin, btnY, btnWidth + 20, btnHeight, "Teleport", self,  UserWarpPanel.onTeleportPortal)
     --self.teleportBtn.backgroundColor = {r=0.2, g=0.5, b=0.2, a=1}
     self.teleportBtn.backgroundColor = {r=0.2, g=0.2, b=0.2, a=1}
-
     self.teleportBtn:setEnable(false)
     self:addChild(self.teleportBtn)
+--[[ 
     self.sendBeaconBtn = ISButton:new(margin + btnWidth + 30, btnY, btnWidth, btnHeight, "Beacon", self, UserWarpPanel.onBeacon)
     self.sendBeaconBtn.backgroundColor = {r=0.2, g=0.6, b=0.2, a=1}
     self:addChild(self.sendBeaconBtn)
@@ -86,12 +107,13 @@ function UserWarpPanel:initialise()
     else
         self.sendBeaconBtn:setEnable(false)
     end
-
+ ]]
     self:loadPortals()
     self:refreshList()
 end
 
 -----------------------            ---------------------------
+--[[ 
 function UserWarpPanel:onBeacon()
     local selected = self.scrollPanel.selected
     if selected <= 0 then return end
@@ -110,7 +132,7 @@ function UserWarpPanel:onBeacon()
         }
         sendServerCommand("AdminWarp", "Beacon", {portal = portalData})
     end
-end
+end ]]
 
 -----------------------            ---------------------------
 function UserWarpPanel:update()
@@ -128,7 +150,7 @@ function UserWarpPanel:update()
     end
 
     self.teleportBtn:setEnable(canTeleport)
-    self.sendBeaconBtn:setEnable(canBeacon)
+    --self.sendBeaconBtn:setEnable(canBeacon)
 
     if AdminWarpData and type(AdminWarpData) == "table" then
         local changed = (#AdminWarpData ~= #self.portals)
@@ -233,7 +255,7 @@ function UserWarpPanel:onTeleportPortal()
     end
 
     local delay = SandboxVars.AdminWarp.TPdelay or 10
-    UserWarp:startTeleportCountdown(pl, portal, delay, false)
+    UserWarp.startTeleportCountdown(pl, portal, delay, false)
 end
 
 function UserWarpPanel:onRefresh()

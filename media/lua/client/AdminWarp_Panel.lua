@@ -1,4 +1,24 @@
-
+----------------------------------------------------------------
+-----  ▄▄▄   ▄    ▄   ▄  ▄▄▄▄▄   ▄▄▄   ▄   ▄   ▄▄▄    ▄▄▄  -----
+----- █   ▀  █    █▄▄▄█    █    █   ▀  █▄▄▄█  ▀  ▄█  █ ▄▄▀ -----
+----- █  ▀█  █      █      █    █   ▄  █   █  ▄   █  █   █ -----
+-----  ▀▀▀▀  ▀▀▀▀   ▀      ▀     ▀▀▀   ▀   ▀   ▀▀▀   ▀   ▀ -----
+----------------------------------------------------------------
+--                                                            --
+--   Project Zomboid Modding Commissions                      --
+--   https://steamcommunity.com/id/glytch3r/myworkshopfiles   --
+--                                                            --
+--   ▫ Discord  ꞉   glytch3r                                  --
+--   ▫ Support  ꞉   https://ko-fi.com/glytch3r                --
+--   ▫ Youtube  ꞉   https://www.youtube.com/@glytch3r         --
+--   ▫ Github   ꞉   https://github.com/Glytch3r               --
+--                                                            --
+----------------------------------------------------------------
+----- ▄   ▄   ▄▄▄   ▄   ▄   ▄▄▄     ▄      ▄   ▄▄▄▄  ▄▄▄▄  -----
+----- █   █  █   ▀  █   █  ▀   █    █      █      █  █▄  █ -----
+----- ▄▀▀ █  █▀  ▄  █▀▀▀█  ▄   █    █    █▀▀▀█    █  ▄   █ -----
+-----  ▀▀▀    ▀▀▀   ▀   ▀   ▀▀▀   ▀▀▀▀▀  ▀   ▀    ▀   ▀▀▀  -----
+----------------------------------------------------------------
 require "ISUI/ISPanel"
 require "ISUI/ISButton"
 require "ISUI/ISScrollingListBox"
@@ -111,6 +131,11 @@ function AdminWarpPanel:initialise()
     self.teleportBtn.enable = false
     self:addChild(self.teleportBtn)
 
+    self.summonBtn = ISButton:new(margin + (btnWidth + 10) * 4 + 20, btnY, btnWidth, btnHeight, "Summon", self, AdminWarpPanel.onSummonPortal)
+    self.summonBtn.backgroundColor = {r=0.6, g=0.6, b=0.2, a=1}
+    self.summonBtn.enable = false
+    self:addChild(self.summonBtn)
+
     self:loadPortals()
     self:refreshList()
 end
@@ -118,6 +143,13 @@ end
 function AdminWarpPanel:update()
     ISCollapsableWindow.update(self)
     self.teleportBtn.enable = (self.scrollPanel.selected > 0)
+    
+    local canSummon = false
+    if self.scrollPanel.selected > 0 then
+        canSummon = true
+    end
+    self.summonBtn.enable = canSummon
+    
     if AdminWarpData then
         local changed = (#AdminWarpData ~= #self.portals)
         if not changed then
@@ -159,13 +191,12 @@ end
 function AdminWarpPanel:refreshList()
     AdminWarpData = self.portals
     ModData.add("AdminWarpData", AdminWarpData)
-    self:refreshListDisplay()--[[  ]]
+    self:refreshListDisplay()
     self:sendUpdateToServer()
 end
 
 function AdminWarpPanel:refreshListDisplay()
     self.scrollPanel:clear()
-    print("Refreshing display with " .. #self.portals .. " portals")
     
     for i, portal in ipairs(self.portals) do
         local factionDisplay = portal.faction or "Everyone"
@@ -245,6 +276,18 @@ function AdminWarpPanel:onTeleportPortal()
         end
     end
 end
+
+function AdminWarpPanel:onSummonPortal()
+    local pl = getPlayer()
+    local selected = self.scrollPanel.selected
+    if selected <= 0 then return end
+    local portal = self.portals[selected]
+    if isClient() and portal then
+        sendClientCommand(getPlayer(), "AdminWarp", "Summon", {portal = portal})
+    end
+
+end
+
 function AdminWarpPanel:ClosePanel()
     if AdminWarpPanel.instance then
         AdminWarpPanel.instance:removeHooks()

@@ -1,3 +1,24 @@
+----------------------------------------------------------------
+-----  ▄▄▄   ▄    ▄   ▄  ▄▄▄▄▄   ▄▄▄   ▄   ▄   ▄▄▄    ▄▄▄  -----
+----- █   ▀  █    █▄▄▄█    █    █   ▀  █▄▄▄█  ▀  ▄█  █ ▄▄▀ -----
+----- █  ▀█  █      █      █    █   ▄  █   █  ▄   █  █   █ -----
+-----  ▀▀▀▀  ▀▀▀▀   ▀      ▀     ▀▀▀   ▀   ▀   ▀▀▀   ▀   ▀ -----
+----------------------------------------------------------------
+--                                                            --
+--   Project Zomboid Modding Commissions                      --
+--   https://steamcommunity.com/id/glytch3r/myworkshopfiles   --
+--                                                            --
+--   ▫ Discord  ꞉   glytch3r                                  --
+--   ▫ Support  ꞉   https://ko-fi.com/glytch3r                --
+--   ▫ Youtube  ꞉   https://www.youtube.com/@glytch3r         --
+--   ▫ Github   ꞉   https://github.com/Glytch3r               --
+--                                                            --
+----------------------------------------------------------------
+----- ▄   ▄   ▄▄▄   ▄   ▄   ▄▄▄     ▄      ▄   ▄▄▄▄  ▄▄▄▄  -----
+----- █   █  █   ▀  █   █  ▀   █    █      █      █  █▄  █ -----
+----- ▄▀▀ █  █▀  ▄  █▀▀▀█  ▄   █    █    █▀▀▀█    █  ▄   █ -----
+-----  ▀▀▀    ▀▀▀   ▀   ▀   ▀▀▀   ▀▀▀▀▀  ▀   ▀    ▀   ▀▀▀  -----
+----------------------------------------------------------------
 
 --server/AdminWarp_Server.lua
 if isClient() then return end
@@ -28,9 +49,9 @@ function AdminWarp.clientSync(module, command, player, args)
             sendServerCommand(player, "AdminWarp", "Update", {data = AdminWarpData})
         elseif command == "Check" then
             sendServerCommand(player, "AdminWarp", "Check", {data = AdminWarpData})
-        elseif command == "Beacon" then
+        elseif command == "Summon" then
             if not args.portal then return end
-            sendServerCommand(player, "AdminWarp", "Beacon", {portal = args.portal})
+            sendServerCommand(player, "AdminWarp", "Summon", {portal = args.portal})
         end
     end
 end

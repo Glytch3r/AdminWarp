@@ -1,5 +1,27 @@
+----------------------------------------------------------------
+-----  ▄▄▄   ▄    ▄   ▄  ▄▄▄▄▄   ▄▄▄   ▄   ▄   ▄▄▄    ▄▄▄  -----
+----- █   ▀  █    █▄▄▄█    █    █   ▀  █▄▄▄█  ▀  ▄█  █ ▄▄▀ -----
+----- █  ▀█  █      █      █    █   ▄  █   █  ▄   █  █   █ -----
+-----  ▀▀▀▀  ▀▀▀▀   ▀      ▀     ▀▀▀   ▀   ▀   ▀▀▀   ▀   ▀ -----
+----------------------------------------------------------------
+--                                                            --
+--   Project Zomboid Modding Commissions                      --
+--   https://steamcommunity.com/id/glytch3r/myworkshopfiles   --
+--                                                            --
+--   ▫ Discord  ꞉   glytch3r                                  --
+--   ▫ Support  ꞉   https://ko-fi.com/glytch3r                --
+--   ▫ Youtube  ꞉   https://www.youtube.com/@glytch3r         --
+--   ▫ Github   ꞉   https://github.com/Glytch3r               --
+--                                                            --
+----------------------------------------------------------------
+----- ▄   ▄   ▄▄▄   ▄   ▄   ▄▄▄     ▄      ▄   ▄▄▄▄  ▄▄▄▄  -----
+----- █   █  █   ▀  █   █  ▀   █    █      █      █  █▄  █ -----
+----- ▄▀▀ █  █▀  ▄  █▀▀▀█  ▄   █    █    █▀▀▀█    █  ▄   █ -----
+-----  ▀▀▀    ▀▀▀   ▀   ▀   ▀▀▀   ▀▀▀▀▀  ▀   ▀    ▀   ▀▀▀  -----
+----------------------------------------------------------------
 if not isClient() then return end
 AdminWarp = AdminWarp or {}
+UserWarp = UserWarp or {}
 
 local Commands = {};
 Commands.AdminWarp = {};
@@ -47,27 +69,8 @@ end
 Commands.AdminWarp.Check = function(args)
     if args.data then
         AdminWarpData = args.data
-        --print('AdminWarpData: checked from server')
     end
 end
-Commands.AdminWarp.Beacon = function(args)
-    local pl = getPlayer()
-    if not args.portal then return end
-    local portalData = args.portal
-    local isMember = AdminWarp.isMember(pl, portalData.faction)
-    print(isMember)
-    if  isMember then
-        UserWarp:startTeleportCountdown(pl, portalData, portalData.seconds, true)
-    end
-end
-
-
-
-Events.OnServerCommand.Add(function(module, command, args)
-	if Commands[module] and Commands[module][command] then
-		Commands[module][command](args)
-	end
-end)
 
 function AdminWarp.initClient()
     AdminWarpData = ModData.getOrCreate("AdminWarpData")
@@ -93,20 +96,32 @@ end
 Events.OnReceiveGlobalModData.Add(AdminWarp.onModDataReceive)
 -----------------------            ---------------------------
 
-
-
-Commands.AdminWarp.Beacon = function(args)
+Commands.AdminWarp.Summon = function(args)
     local pl = getPlayer()
-    if not args.portal then return end
-    local portalData = args.portal
+    if not pl or not args.portal then return end
 
-    if AdminWarp.isMember(pl, portalData.faction) then
-        UserWarp:startTeleportCountdown(pl, portalData, portalData.seconds, true)
+    local portal = args.portal
+    local factName = portal.faction
+    local isTp = false
+
+    if not factName or factName == "" or factName == "Everyone" then
+        if not AdminWarp.isAdm(pl) then
+            isTp = true
+        end
+    else
+        if AdminWarp.isMember(pl, factName) then
+            isTp = true
+        end
     end
+    if not isTp then return end
+
+    local delay = SandboxVars.AdminWarp.TPdelay or 10
+    UserWarp.startTeleportCountdown(pl, portal, delay, true)
 end
 
 Events.OnServerCommand.Add(function(module, command, args)
-    if Commands[module] and Commands[module][command] then
-        Commands[module][command](args)
-    end
+	if Commands[module] and Commands[module][command] then
+		Commands[module][command](args)
+	end
 end)
+
