@@ -159,7 +159,7 @@ end
 function AdminWarpPanel:refreshList()
     AdminWarpData = self.portals
     ModData.add("AdminWarpData", AdminWarpData)
-    self:refreshListDisplay()
+    self:refreshListDisplay()--[[  ]]
     self:sendUpdateToServer()
 end
 

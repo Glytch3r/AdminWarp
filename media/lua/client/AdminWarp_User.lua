@@ -222,20 +222,18 @@ end
 function UserWarpPanel:onTeleportPortal()
     local pl = getPlayer()
     local selected = self.scrollPanel.selected
-    if selected > 0 then
-        local selectedItem = self.scrollPanel.items[selected]
-        if selectedItem and selectedItem.item and selectedItem.item.active then
-            local portal = selectedItem.item
-            if pl then
-                local delay = SandboxVars.AdminWarp.TPdelay or 10
-                UserWarp:startTeleportCountdown(pl, portal, delay, isBeacon)
-            end
-        else
-            if pl then
-                pl:addLineChatElement("Portal is inactive: " .. (selectedItem.item.title or "Unknown"))
-            end
+    if selected <= 0 then return end
+
+    local portal = self.portals[selected]
+    if not portal or not portal.active then
+        if pl then
+            pl:addLineChatElement("Portal is inactive: " .. (portal and portal.title or "Unknown"))
         end
+        return
     end
+
+    local delay = SandboxVars.AdminWarp.TPdelay or 10
+    UserWarp:startTeleportCountdown(pl, portal, delay, false)
 end
 
 function UserWarpPanel:onRefresh()
