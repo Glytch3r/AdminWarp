@@ -28,6 +28,9 @@ function AdminWarp.clientSync(module, command, player, args)
             sendServerCommand(player, "AdminWarp", "Update", {data = AdminWarpData})
         elseif command == "Check" then
             sendServerCommand(player, "AdminWarp", "Check", {data = AdminWarpData})
+        elseif command == "Beacon" then
+            if not args.portal then return end
+            sendServerCommand(player, "AdminWarp", "Beacon", {portal = args.portal})
         end
     end
 end

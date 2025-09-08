@@ -1,22 +1,35 @@
 UserWarp = UserWarp or {}
 UserWarp.teleportCountdowns = {}
+UserWarp.tickHandlerAdded = false
 
-function UserWarp:startTeleportCountdown(player, portal, seconds)
-    if not portal or not portal.active then return end
-    if not player then return end
+function UserWarp:sendBeacon(portal)
+    if not portal then return end
+    local portalData = {
+        x = portal.x,
+        y = portal.y,
+        z = portal.z,
+        title = portal.title,
+        faction = portal.faction,
+        seconds = SandboxVars.AdminWarp.TPdelay or 10
+    }
+    sendServerCommand("AdminWarp", "Beacon", {portal = portalData})
+end
 
-    UserWarp.teleportCountdowns[player:getUsername()] = {
-        portal = portal,
+function UserWarp:startTeleportCountdown(player, portalData, seconds, isBeacon)
+    if not portalData or not player or not portalData.active then return end
+
+    self.teleportCountdowns[player:getUsername()] = {
         player = player,
+        portal = portalData,
         secondsLeft = seconds,
-        secondCounter = 0,
-        markerCounter = 0,
-        marker = nil
+        tickCounter = 0,
+        marker = nil,
+        isBeacon = isBeacon
     }
 
-    if not UserWarp.tickHandlerAdded then
-        Events.OnTick.Add(UserWarp.teleportTickHandler)
-        UserWarp.tickHandlerAdded = true
+    if not self.tickHandlerAdded then
+        Events.OnTick.Add(self.teleportTickHandler)
+        self.tickHandlerAdded = true
     end
 end
 
@@ -30,23 +43,26 @@ end
 
 function UserWarp.teleportTick(cd)
     local pl = cd.player
+    cd.tickCounter = cd.tickCounter + 1
 
-    cd.secondCounter = cd.secondCounter + 1
-    cd.markerCounter = cd.markerCounter + 1
-
-    if cd.markerCounter >= 20 then
-        cd.markerCounter = 0
-        if cd.marker then cd.marker:remove(); cd.marker = nil end
-        cd.marker = getWorldMarkers():addGridSquareMarker("warp", "warp", pl:getCurrentSquare(), 1, 1, 1, true, ZombRand(1,10)/10)
+    if cd.tickCounter % 20 == 0 then
+        if cd.marker then cd.marker:remove() end
+        local r, g, b = 1, 1, 1
+        if cd.isBeacon then
+            r, g, b = 0.6, 1, 0.2 
+        end
+        cd.marker = getWorldMarkers():addGridSquareMarker("warp", "warp", pl:getCurrentSquare(), r, g, b, true, ZombRand(1,10)/10)
     end
-
-    if cd.secondCounter >= 60 then
-        cd.secondCounter = 0
+    if cd.tickCounter % 60 == 0 then
         cd.secondsLeft = cd.secondsLeft - 1
         if cd.secondsLeft > 0 then
-            pl:addLineChatElement("Teleporting to " .. cd.portal.title .. " in " .. cd.secondsLeft .. " seconds...")
+            if cd.isBeacon then
+                pl:addLineChatElement("Being summoned to " .. cd.portal.title .. " in " .. cd.secondsLeft .. " seconds...")
+            else
+                pl:addLineChatElement("Teleporting to " .. cd.portal.title .. " in " .. cd.secondsLeft .. " seconds...")
+            end
         else
-            if cd.marker then cd.marker:remove(); cd.marker = nil end
+            if cd.marker then cd.marker:remove() end
             local portal = cd.portal
             pl:setX(portal.x)
             pl:setLx(portal.x)

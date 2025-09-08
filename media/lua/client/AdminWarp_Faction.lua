@@ -8,6 +8,16 @@ function AdminWarp.isPlayerInFaction(user, name)
     return fact:isMember(user) 
 end
 
+function AdminWarp.isOwner(pl, portal)
+    if not pl or not portal then return false end
+    if not portal.faction then return false end
+
+    local playerFaction = AdminWarp.getPlayerFaction(pl)
+    if not playerFaction then return false end
+
+    return playerFaction:isOwner(pl:getUsername())
+end
+
 
 
 function AdminWarp.getPlayerFaction(targ)

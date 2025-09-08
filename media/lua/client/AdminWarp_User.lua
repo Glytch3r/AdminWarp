@@ -70,32 +70,65 @@ function UserWarpPanel:initialise()
     self:addChild(self.scrollPanel)
 
     local btnY = self.height - 50
-    self.teleportBtn = ISButton:new(margin, btnY, btnWidth + 20, btnHeight, "Teleport", self, UserWarpPanel.onTeleportPortal)
+    self.teleportBtn = ISButton:new(margin, btnY, btnWidth + 20, btnHeight, "Teleport", self,  UserWarpPanel.onTeleportPortal)
     --self.teleportBtn.backgroundColor = {r=0.2, g=0.5, b=0.2, a=1}
     self.teleportBtn.backgroundColor = {r=0.2, g=0.2, b=0.2, a=1}
 
     self.teleportBtn:setEnable(false)
     self:addChild(self.teleportBtn)
+    self.sendBeaconBtn = ISButton:new(margin + btnWidth + 30, btnY, btnWidth, btnHeight, "Beacon", self, UserWarpPanel.onBeacon)
+    self.sendBeaconBtn.backgroundColor = {r=0.2, g=0.6, b=0.2, a=1}
+    self:addChild(self.sendBeaconBtn)
 
---[[     self.refreshBtn = ISButton:new(margin + btnWidth + 30, btnY, btnWidth, btnHeight, "Refresh", self, UserWarpPanel.onRefresh)
-    self.refreshBtn.backgroundColor = {r=0.2, g=0.6, b=0.2, a=1}
-    self:addChild(self.refreshBtn) ]]
+    local pl = getPlayer()
+    if self.selectedPortal and AdminWarp.isOwner(pl, self.selectedPortal) then
+        self.sendBeaconBtn:setEnable(true)
+    else
+        self.sendBeaconBtn:setEnable(false)
+    end
 
     self:loadPortals()
     self:refreshList()
 end
 
+-----------------------            ---------------------------
+function UserWarpPanel:onBeacon()
+    local selected = self.scrollPanel.selected
+    if selected <= 0 then return end
+
+    local portal = self.portals[selected]
+    if not portal then return end
+
+    if AdminWarp.isOwner(getPlayer(), portal) then
+        local portalData = {
+            x = portal.x,
+            y = portal.y,
+            z = portal.z,
+            title = portal.title,
+            faction = portal.faction,
+            seconds = SandboxVars.AdminWarp.TPdelay or 10
+        }
+        sendServerCommand("AdminWarp", "Beacon", {portal = portalData})
+    end
+end
+
+-----------------------            ---------------------------
 function UserWarpPanel:update()
     ISCollapsableWindow.update(self)
 
     local selectedItem = self.scrollPanel.items[self.scrollPanel.selected]
+    local selectedPortal = self.portals[self.scrollPanel.selected]
+    local pl = getPlayer()
     local canTeleport = false
+    local canBeacon = false
 
-    if selectedItem and selectedItem.item then
-        canTeleport = selectedItem.item.active == true
+    if selectedPortal then
+        canTeleport = selectedPortal.active and self:canPlayerSeePortal(pl, selectedPortal)
+        canBeacon = selectedPortal.active and AdminWarp.isOwner(pl, selectedPortal)
     end
 
     self.teleportBtn:setEnable(canTeleport)
+    self.sendBeaconBtn:setEnable(canBeacon)
 
     if AdminWarpData and type(AdminWarpData) == "table" then
         local changed = (#AdminWarpData ~= #self.portals)
@@ -195,7 +228,7 @@ function UserWarpPanel:onTeleportPortal()
             local portal = selectedItem.item
             if pl then
                 local delay = SandboxVars.AdminWarp.TPdelay or 10
-                UserWarp:startTeleportCountdown(pl, portal, delay)
+                UserWarp:startTeleportCountdown(pl, portal, delay, isBeacon)
             end
         else
             if pl then
