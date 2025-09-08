@@ -1,0 +1,8 @@
+VERSION = 1,
+
+option AdminWarp.TPdelay
+{
+	type = integer, min = 0, max = 60, default = 10,
+	page = AdminWarp, translation = AdminWarp_TPdelay,
+}
+ 
