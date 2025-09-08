@@ -35,18 +35,15 @@ function AdminWarp.context(player, context, worldobjects, test)
 	local sq = clickedSquare
 	if not pl then return end 
 
-	
-	if getActivatedMods():contains("AdminFence") and not getCore():getDebug() and  AdminWarp.isAdm(pl) then
-		return
-    end
+
 	local x, y = round(pl:getX()), round(pl:getY())
 	if not x or not y then return end
 	if getCore():getDebug() or sq:DistTo(x, y) <= 3 or sq == pl:getCurrentSquare() then
         local tip = ISWorldObjectContextMenu.addToolTip()
 		local mainMenu = "Warp Panel"
 		local Main = context:addOptionOnTop(tostring(mainMenu), worldobjects, function()
-      
-            if  AdminWarp.isAdm(pl) then    
+			
+            if not getActivatedMods():contains("AdminFence") and not getCore():getDebug() and AdminWarp.isAdm(pl) then    
                 AdminWarpPanel.TogglePanel()
             else
                 UserWarpPanel.OpenPanel()
