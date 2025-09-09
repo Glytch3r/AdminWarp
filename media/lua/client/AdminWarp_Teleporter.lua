@@ -48,14 +48,14 @@ function AdminWarp.getPortalFromName(name)
 end
 
 
-function UserWarp.startTeleportCountdown(player, portalData, seconds, isBeacon)
-    player = player or getPlayer() 
-    if not portalData or not player then return end
+function UserWarp.startTeleportCountdown(pl, portalData, seconds, isBeacon)
+    pl = pl or getPlayer() 
+    if not portalData or not pl then return end
     if not isBeacon and not portalData.active then return end
     local  isForAll = false
      if portalData.faction == nil then isForAll = true end
-    UserWarp.teleportCountdowns[player:getUsername()] = {
-        player = player,
+    UserWarp.teleportCountdowns[pl:getUsername()] = {
+        player = pl,
         portal = portalData,
         secondsLeft = seconds,
         tickCounter = 0,
@@ -93,7 +93,10 @@ function UserWarp.teleportTick(cd)
         elseif cd.isBeacon then
             r, g, b = 0.6, 1, 0.2 
         end
-        cd.marker = getWorldMarkers():addGridSquareMarker("warp", "warp", pl:getCurrentSquare(), r, g, b, true, ZombRand(1,10)/10)
+        local csq = pl:getCurrentSquare()
+        if csq then
+            cd.marker = getWorldMarkers():addGridSquareMarker("warp", "warp", csq, r, g, b, true, ZombRand(1,10)/10)
+        end
     end
     if cd.tickCounter % 60 == 0 then
         cd.secondsLeft = cd.secondsLeft - 1
@@ -106,6 +109,8 @@ function UserWarp.teleportTick(cd)
         else
             if cd.marker then cd.marker:remove() end
             local portal = cd.portal
+            pl:playSoundLocal("AdminWarp")
+
             pl:setX(portal.x)
             pl:setLx(portal.x)
             pl:setY(portal.y)

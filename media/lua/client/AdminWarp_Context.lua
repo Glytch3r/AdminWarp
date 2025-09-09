@@ -40,13 +40,11 @@ function AdminWarp.context(player, context, worldobjects, test)
 	if not x or not y then return end
 	if getCore():getDebug() or sq:DistTo(x, y) <= 3 or sq == pl:getCurrentSquare() then
         local tip = ISWorldObjectContextMenu.addToolTip()
-		local mainMenu = "Warp Panel"
-		local Main = context:addOptionOnTop(tostring(mainMenu), worldobjects, function()
-			
-            if not getActivatedMods():contains("AdminFence") and not getCore():getDebug() and AdminWarp.isAdm(pl) then    
+		local Main = context:addOptionOnTop(tostring("Warp Panel"), worldobjects, function()			
+            if not (getActivatedMods():contains("AdminFence") or getActivatedMods():contains("MiniToolKit"))and not getCore():getDebug() and AdminWarp.isAdm(pl) then    
                 AdminWarpPanel.TogglePanel()
             else
-                UserWarpPanel.OpenPanel()
+                UserWarpPanel.TogglePanel()
             end
 			getSoundManager():playUISound("UIActivateMainMenuItem")
 			context:hideAndChildren()

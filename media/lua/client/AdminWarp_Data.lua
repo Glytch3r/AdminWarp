@@ -115,7 +115,7 @@ Commands.AdminWarp.Summon = function(args)
     end
     if not isTp then return end
 
-    local delay = SandboxVars.AdminWarp.TPdelay or 10
+    local delay = SandboxVars.AdminWarp.SummonDelay or 10
     UserWarp.startTeleportCountdown(pl, portal, delay, true)
 end
 

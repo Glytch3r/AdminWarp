@@ -1,0 +1,4 @@
+module Base {
+	imports { Base }
+	sound AdminWarp { category = UI, clip { file = media/sound/AdminWarp.ogg, distanceMax = 80, is3D = true,  maxInstancesPerEmitter = 2, volume = 0.5, } }
+}

@@ -266,13 +266,15 @@ function AdminWarpPanel:onTeleportPortal()
     local selected = self.scrollPanel.selected
     if selected > 0 then
         local portal = self.portals[selected]
-        local player = getPlayer()
-        if player and portal then
-            player:setX(portal.x)
-            player:setLx(portal.x)
-            player:setY(portal.y)
-            player:setLy(portal.y)
-            player:setZ(portal.z)
+        local pl = getPlayer()
+        if pl and portal then
+            pl:setX(portal.x)
+            pl:setLx(portal.x)
+            pl:setY(portal.y)
+            pl:setLy(portal.y)
+            pl:setZ(portal.z)
+            pl:playSoundLocal("AdminWarp")
+
         end
     end
 end
