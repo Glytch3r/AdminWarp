@@ -41,11 +41,10 @@ function AdminWarp.context(player, context, worldobjects, test)
         local blocked = getActivatedMods():contains("AdminFence") or getActivatedMods():contains("MiniToolKit")
         if blocked and not getCore():getDebug() then return end
 
-        local tip = ISWorldObjectContextMenu.addToolTip()
-        local mainOption = context:addOptionOnTop("Warp Panel", worldobjects, nil)
-        mainOption.iconTexture = getTexture("media/ui/LootableMaps/map_asterisk.png")
-
         if AdminWarp.isAdm(pl) then
+            local mainOption = context:addOptionOnTop("Warp Panel", worldobjects, nil)
+            mainOption.iconTexture = getTexture("media/ui/LootableMaps/map_asterisk.png")
+
             local subMenu = ISContextMenu:getNew(context)
             context:addSubMenu(mainOption, subMenu)
 
@@ -61,7 +60,6 @@ function AdminWarp.context(player, context, worldobjects, test)
                 context:hideAndChildren()
             end)
         else
-            context:removeLastOption()
             local onlyOption = context:addOptionOnTop("User Warp Panel", worldobjects, function()
                 UserWarpPanel.TogglePanel()
                 getSoundManager():playUISound("UIActivateMainMenuItem")
