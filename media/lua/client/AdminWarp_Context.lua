@@ -29,29 +29,47 @@ function AdminWarp.isAdm(pl)
     return isClient() and string.lower(pl:getAccessLevel()) == "admin"
 end
 
-
 function AdminWarp.context(player, context, worldobjects, test)
-	local pl = getSpecificPlayer(player)
-	local sq = clickedSquare
-	if not pl then return end 
+    local pl = getSpecificPlayer(player)
+    local sq = clickedSquare
+    if not pl then return end
 
+    local x, y = round(pl:getX()), round(pl:getY())
+    if not x or not y then return end
 
-	local x, y = round(pl:getX()), round(pl:getY())
-	if not x or not y then return end
-	if getCore():getDebug() or sq:DistTo(x, y) <= 3 or sq == pl:getCurrentSquare() then
+    if getCore():getDebug() or (sq and (sq:DistTo(x, y) <= 3 or sq == pl:getCurrentSquare())) then
+        local blocked = getActivatedMods():contains("AdminFence") or getActivatedMods():contains("MiniToolKit")
+        if blocked and not getCore():getDebug() then return end
+
         local tip = ISWorldObjectContextMenu.addToolTip()
-		local Main = context:addOptionOnTop(tostring("Warp Panel"), worldobjects, function()			
-            if not (getActivatedMods():contains("AdminFence") or getActivatedMods():contains("MiniToolKit"))and not getCore():getDebug() and AdminWarp.isAdm(pl) then    
-                AdminWarpPanel.TogglePanel()
-            else
-                UserWarpPanel.TogglePanel()
-            end
-			getSoundManager():playUISound("UIActivateMainMenuItem")
-			context:hideAndChildren()
-		end)
-		Main.iconTexture = getTexture("media/ui/LootableMaps/map_asterisk.png")
-        
+        local mainOption = context:addOptionOnTop("Warp Panel", worldobjects, nil)
+        mainOption.iconTexture = getTexture("media/ui/LootableMaps/map_asterisk.png")
 
-	end
+        if AdminWarp.isAdm(pl) then
+            local subMenu = ISContextMenu:getNew(context)
+            context:addSubMenu(mainOption, subMenu)
+
+            subMenu:addOption("Admin Warp Panel", worldobjects, function()
+                AdminWarpPanel.TogglePanel()
+                getSoundManager():playUISound("UIActivateMainMenuItem")
+                context:hideAndChildren()
+            end)
+
+            subMenu:addOption("User Warp Panel", worldobjects, function()
+                UserWarpPanel.TogglePanel()
+                getSoundManager():playUISound("UIActivateMainMenuItem")
+                context:hideAndChildren()
+            end)
+        else
+            context:removeLastOption()
+            local onlyOption = context:addOptionOnTop("User Warp Panel", worldobjects, function()
+                UserWarpPanel.TogglePanel()
+                getSoundManager():playUISound("UIActivateMainMenuItem")
+                context:hideAndChildren()
+            end)
+            onlyOption.iconTexture = getTexture("media/ui/LootableMaps/map_asterisk.png")
+        end
+    end
 end
+
 Events.OnFillWorldObjectContextMenu.Add(AdminWarp.context)
