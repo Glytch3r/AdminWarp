@@ -24,12 +24,21 @@ require "ISUI/ISButton"
 require "ISUI/ISScrollingListBox"
 require "ISUI/ISCollapsableWindow"
 
+AdminWarp = AdminWarp or {}
 UserWarp = UserWarp or {}
 UserWarpPanel = ISCollapsableWindow:derive("UserWarpPanel")
 UserWarpPanel.instance = nil
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
+
+
+
+function UserWarp.isShowCoords()
+    return SandboxVars.AdminWarp.ShowCoords or false
+end
+
+
 
 function UserWarpPanel:new(x, y, width, height)
     local o = ISCollapsableWindow:new(x, y, width, height)
@@ -41,29 +50,29 @@ function UserWarpPanel:new(x, y, width, height)
     o.portals = {}
     return o
 end
-
 function UserWarpPanel:initialise()
     ISCollapsableWindow.initialise(self)
     local btnWidth, btnHeight, margin = 80, 25, 10
     local listY, listHeight = 70, self.height - 120
-    local labelY = listY - FONT_HGT_SMALL - 10      
+    local labelY = listY - FONT_HGT_SMALL - 10
 
     local titleX = 50
-    local coordsX = 200
-    local statusX = 330
-    local factionX = 460
+    local statusX = 200
+    local coordsX = 330 
 
     self.labelTitle = ISLabel:new(titleX+35, labelY, FONT_HGT_SMALL, "Title", 1, 1, 1, 1, UIFont.Medium)
     self:addChild(self.labelTitle)
+
     self.labelCoords = ISLabel:new(coordsX+55, labelY, FONT_HGT_SMALL, "Coords", 1, 1, 1, 1, UIFont.Medium)
     self:addChild(self.labelCoords)
+
+
     self.labelStatus = ISLabel:new(statusX+35, labelY, FONT_HGT_SMALL, "Status", 1, 1, 1, 1, UIFont.Medium)
     self:addChild(self.labelStatus)
 
-
     self.scrollPanel = ISScrollingListBox:new(margin, listY, self.width - margin * 2, listHeight)
     self.scrollPanel:initialise()
-    self.scrollPanel.backgroundColor = {r=0.1, g=0.1, b=0.1, a=0} 
+    self.scrollPanel.backgroundColor = {r=0.1, g=0.1, b=0.1, a=0}
     self.scrollPanel.borderColor = {r=0.3, g=0.3, b=0.3, a=1}
     self.scrollPanel.drawBorder = true
     self.scrollPanel.itemheight = 25
@@ -71,19 +80,25 @@ function UserWarpPanel:initialise()
     self.scrollPanel.doDrawItem = function(panel, y, item, alt)
         local rectY = y + 1
         local rectH = panel.itemheight - 2
-
+        local rectW = panel.width -  120
+     
         if panel.selected == item.index then
-            panel:drawRect(0, rectY, panel.width, rectH, 0.4, 0.6, 0.4, 0.8)
+            panel:drawRect(0, rectY, rectW , rectH, 0.4, 0.6, 0.4, 0.8)
         elseif item.item.active then
-            panel:drawRect(0, rectY, panel.width, rectH, 0.4, 0.2, 0.2, 0.25)
+            panel:drawRect(0, rectY, rectW , rectH, 0.4, 0.2, 0.2, 0.25)
         else
-            panel:drawRect(0, rectY, panel.width, rectH, 0.2, 0.2, 0.2, 0.25)
+            panel:drawRect(0, rectY, rectW , rectH, 0.2, 0.2, 0.2, 0.25)
         end
 
         local textY = y + (panel.itemheight - FONT_HGT_SMALL) / 2
+
         panel:drawText(item.item.title or "", titleX, textY, 1,1,1,1, UIFont.Small)
-        panel:drawText(item.item.coords or "", coordsX, textY, 1,1,1,1, UIFont.Small)
+
         panel:drawText(item.item.active and "Active" or "Inactive", statusX, textY, 1,1,1,1, UIFont.Small)
+
+        if UserWarp.isShowCoords() then
+            panel:drawText(item.item.coords or "", coordsX, textY, 1,1,1,1, UIFont.Small)
+        end
 
         return y + panel.itemheight
     end
@@ -91,48 +106,15 @@ function UserWarpPanel:initialise()
     self:addChild(self.scrollPanel)
 
     local btnY = self.height - 50
-    self.teleportBtn = ISButton:new(margin, btnY, btnWidth + 20, btnHeight, "Teleport", self,  UserWarpPanel.onTeleportPortal)
-    --self.teleportBtn.backgroundColor = {r=0.2, g=0.5, b=0.2, a=1}
+    self.teleportBtn = ISButton:new(margin, btnY, btnWidth + 20, btnHeight, "Teleport", self, UserWarpPanel.onTeleportPortal)
     self.teleportBtn.backgroundColor = {r=0.2, g=0.2, b=0.2, a=1}
     self.teleportBtn:setEnable(false)
     self:addChild(self.teleportBtn)
---[[ 
-    self.sendBeaconBtn = ISButton:new(margin + btnWidth + 30, btnY, btnWidth, btnHeight, "Beacon", self, UserWarpPanel.onBeacon)
-    self.sendBeaconBtn.backgroundColor = {r=0.2, g=0.6, b=0.2, a=1}
-    self:addChild(self.sendBeaconBtn)
 
-    local pl = getPlayer()
-    if self.selectedPortal and AdminWarp.isOwner(pl, self.selectedPortal) then
-        self.sendBeaconBtn:setEnable(true)
-    else
-        self.sendBeaconBtn:setEnable(false)
-    end
- ]]
     self:loadPortals()
     self:refreshList()
 end
 
------------------------            ---------------------------
---[[ 
-function UserWarpPanel:onBeacon()
-    local selected = self.scrollPanel.selected
-    if selected <= 0 then return end
-
-    local portal = self.portals[selected]
-    if not portal then return end
-
-    if AdminWarp.isOwner(getPlayer(), portal) then
-        local portalData = {
-            x = portal.x,
-            y = portal.y,
-            z = portal.z,
-            title = portal.title,
-            faction = portal.faction,
-            seconds = SandboxVars.AdminWarp.TPdelay or 10
-        }
-        sendServerCommand("AdminWarp", "Beacon", {portal = portalData})
-    end
-end ]]
 
 -----------------------            ---------------------------
 function UserWarpPanel:update()
@@ -150,7 +132,6 @@ function UserWarpPanel:update()
     end
 
     self.teleportBtn:setEnable(canTeleport)
-    --self.sendBeaconBtn:setEnable(canBeacon)
 
     if AdminWarpData and type(AdminWarpData) == "table" then
         local changed = (#AdminWarpData ~= #self.portals)
@@ -176,6 +157,13 @@ function UserWarpPanel:update()
             self:refreshList()
         end
     end
+    if UserWarp.isShowCoords() then
+        self:setWidth(460)
+    else
+        self:setWidth(380)
+    end
+    self.labelCoords:setVisible(UserWarp.isShowCoords())
+
 end
 
 function UserWarpPanel:loadPortals()
@@ -210,21 +198,21 @@ function UserWarpPanel:canPlayerSeePortal(player, portal)
 
     return false
 end
-
 function UserWarpPanel:refreshList()
     local prevSelected = self.scrollPanel.selected
     self.scrollPanel:clear()
 
     for i, portal in ipairs(self.portals) do
-        local factionDisplay = portal.faction or "Everyone"
-        local coords = portal.x .. "," .. portal.y .. "," .. portal.z
-
-        self.scrollPanel:addItem(portal.title, {
+        local item = {
             title = portal.title,
-            coords = coords,
-            active = portal.active,
-            faction = factionDisplay
-        })
+            active = portal.active
+        }
+
+        if UserWarp.isShowCoords() then
+            item.coords = portal.x .. "," .. portal.y .. "," .. portal.z
+        end
+
+        self.scrollPanel:addItem(portal.title, item)
     end
 
     if prevSelected and prevSelected <= #self.scrollPanel.items then
@@ -232,6 +220,7 @@ function UserWarpPanel:refreshList()
     else
         self.scrollPanel.selected = 0
     end
+
     if self.teleportBtn.isEnabled then
         self.teleportBtn.backgroundColor = {r=0.2, g=0.6, b=0.2, a=1}
     else
@@ -277,7 +266,7 @@ function UserWarpPanel.OpenPanel()
     if not UserWarpPanel.instance then
         local x = getCore():getScreenWidth() / 3
         local y = getCore():getScreenHeight() / 2 - 150
-        local w, h = 450, 300
+        local w, h = 460, 300
         UserWarpPanel.instance = UserWarpPanel:new(x, y, w, h)
         UserWarpPanel.instance:initialise()
     end
@@ -292,3 +281,4 @@ function UserWarpPanel.TogglePanel()
         UserWarpPanel.OpenPanel()
     end
 end
+

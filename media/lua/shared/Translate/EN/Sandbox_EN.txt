@@ -5,5 +5,6 @@ Sandbox_EN = {
     Sandbox_AdminWarp_TPdelay_tooltip  = "Seconds before a player gets teleported after pressing a teleport button on the player warp panel",
 	Sandbox_AdminWarp_SummonDelay = "Summon Delay",
     Sandbox_AdminWarp_SummonDelay_tooltip  = "Seconds before a player gets teleported from being summmoned",
-
+	Sandbox_AdminWarp_ShowCoords = "Show Coordinates",
+    Sandbox_AdminWarp_ShowCoords_tooltip  = "Show or Hide the Coordinates on the user panel",
 }

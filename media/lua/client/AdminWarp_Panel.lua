@@ -130,16 +130,25 @@ function AdminWarpPanel:initialise()
     self.teleportBtn.backgroundColor = {r=0.2, g=0.6, b=0.2, a=1}
     self.teleportBtn.enable = false
     self:addChild(self.teleportBtn)
-
-    self.summonBtn = ISButton:new(margin + (btnWidth + 10) * 4 + 20, btnY, btnWidth, btnHeight, "Summon", self, AdminWarpPanel.onSummonPortal)
+    local summonX = margin + (btnWidth + 10) * 4 + 20
+    self.summonBtn = ISButton:new(summonX, btnY, btnWidth, btnHeight, "Summon", self, AdminWarpPanel.onSummonPortal)
     self.summonBtn.backgroundColor = {r=0.6, g=0.6, b=0.2, a=1}
     self.summonBtn.enable = false
     self:addChild(self.summonBtn)
 
+
+    self.coordToggle = ISTickBox:new(summonX + 60 , textboxY, btnWidth, btnHeight, "Coords Visibility", self, AdminWarpPanel.onToggleCoords)
+    self.coordToggle:initialise()
+    self.coordToggle:addOption("Show Coords")
+    self.coordToggle:setSelected(1, true)
+    self:addChild(self.coordToggle)
+
     self:loadPortals()
     self:refreshList()
 end
-
+function AdminWarpPanel:onToggleCoords()
+    self.showCoords = self.coordToggle:isSelected(1)
+end
 function AdminWarpPanel:update()
     ISCollapsableWindow.update(self)
     self.teleportBtn.enable = (self.scrollPanel.selected > 0)
@@ -194,7 +203,6 @@ function AdminWarpPanel:refreshList()
     self:refreshListDisplay()
     self:sendUpdateToServer()
 end
-
 function AdminWarpPanel:refreshListDisplay()
     self.scrollPanel:clear()
     
@@ -205,11 +213,16 @@ function AdminWarpPanel:refreshListDisplay()
         
         self.scrollPanel:addItem(portal.title, {
             title = portal.title,
-            coords = coords,
+            coords = self.showCoords and coords or "HIDDEN",
             status = status,
-            faction = factionDisplay
+            faction = factionDisplay,
+            realCoords = coords,
         })
     end
+end
+function AdminWarpPanel:onToggleCoords()
+    self.showCoords = self.coordToggle:isSelected(1)
+    self:refreshListDisplay()
 end
 
 function AdminWarpPanel:sendUpdateToServer()
